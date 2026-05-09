@@ -1,0 +1,21 @@
+{
+  "name": "agentctl-sdk",
+  "version": "0.1.0",
+  "description": "Node.js SDK for agent-gateway based on the agentctl CLI.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "dependencies": {
+    "undici": "^6.21.1",
+    "yaml": "^2.6.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
