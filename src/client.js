@@ -2,6 +2,7 @@ import { loadAgentctlConfig } from "./config.js";
 import { AgentsResource } from "./resources/agents.js";
 import { CatalogResource } from "./resources/catalog.js";
 import { ChatResource } from "./resources/chat.js";
+import { HooksResource } from "./resources/hooks.js";
 import { SkillsResource } from "./resources/skills.js";
 import { SystemResource } from "./resources/system.js";
 import { ToolsResource } from "./resources/tools.js";
@@ -17,6 +18,7 @@ export class AgentctlClient {
     this.tools = new ToolsResource(this.transport);
     this.skills = new SkillsResource(this.transport);
     this.agents = new AgentsResource(this.transport);
+    this.hooks = new HooksResource(this.transport);
     this.chat = new ChatResource(this.transport);
   }
 

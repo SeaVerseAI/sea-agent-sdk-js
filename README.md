@@ -66,6 +66,21 @@ const result = await client.chat.run({
 console.log(result);
 ```
 
+注册 Hook endpoint：
+
+```js
+const hook = await client.hooks.register({
+  name: "production-line-hook",
+  endpoint: "https://example.com/agent-hook",
+  description: "Receives Agent Worker events for the configured API key.",
+  metadata: {},
+});
+
+console.log(hook);
+```
+
+Hook 使用 `apiKey` 作为 `Authorization: Bearer ...`，payload 中不要传 `api_key`。Worker 固定用 `POST` 调用 endpoint，业务方按事件 payload 中的 `event_id` 自行过滤。
+
 流式聊天：
 
 ```js
@@ -106,6 +121,11 @@ console.log("\nFinal text:", text);
 - `client.agents.update(agentId, payload)`
 - `client.agents.delete(agentId, { operatorId })`
 - `client.agents.capabilities(agentId)`
+- `client.hooks.register(payload)`
+- `client.hooks.list(options)`
+- `client.hooks.get(hookId)`
+- `client.hooks.update(hookId, payload)`
+- `client.hooks.delete(hookId)`
 - `client.chat.createCompletion(payload)`
 - `client.chat.streamCompletion(payload, handlers)`
 - `client.chat.run(options)`
