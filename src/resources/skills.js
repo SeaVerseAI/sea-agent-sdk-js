@@ -13,6 +13,7 @@ export class SkillsResource {
       status: options.status,
       source_kind: options.sourceKind,
       owner_id: options.ownerId,
+      public: options.public,
       provider: options.provider,
       category: options.category,
       limit: options.limit,
