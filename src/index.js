@@ -1,8 +1,8 @@
-export { AgentctlClient } from "./client.js";
+export { SeaAgentClient } from "./client.js";
 export {
-  getDefaultAgentctlConfigPath,
-  loadAgentctlConfig,
-  saveAgentctlConfig,
+  getDefaultSeaAgentConfigPath,
+  loadSeaAgentConfig,
+  saveSeaAgentConfig,
 } from "./config.js";
 export {
   createChatStreamProcessor,

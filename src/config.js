@@ -5,7 +5,7 @@ import YAML from "yaml";
 
 const defaultConfigPath = join(homedir(), ".agentctl", "config.yaml");
 
-export async function loadAgentctlConfig(path = defaultConfigPath) {
+export async function loadSeaAgentConfig(path = defaultConfigPath) {
   try {
     const raw = await readFile(path, "utf8");
     return YAML.parse(raw) ?? {};
@@ -17,11 +17,11 @@ export async function loadAgentctlConfig(path = defaultConfigPath) {
   }
 }
 
-export async function saveAgentctlConfig(config, path = defaultConfigPath) {
+export async function saveSeaAgentConfig(config, path = defaultConfigPath) {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, YAML.stringify(config), "utf8");
 }
 
-export function getDefaultAgentctlConfigPath() {
+export function getDefaultSeaAgentConfigPath() {
   return defaultConfigPath;
 }

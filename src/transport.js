@@ -1,6 +1,6 @@
 import { request, WebSocket } from "undici";
 
-export class AgentctlTransport {
+export class SeaAgentTransport {
   constructor(endpoint, apiKey) {
     this.endpoint = endpoint;
     this.apiKey = apiKey;

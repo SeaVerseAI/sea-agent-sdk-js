@@ -1,5 +1,5 @@
 {
-  "name": "agentctl-sdk",
+  "name": "sea-agent-sdk-js",
   "version": "0.1.0",
   "description": "Node.js SDK for agent-gateway based on the agentctl CLI.",
   "type": "module",

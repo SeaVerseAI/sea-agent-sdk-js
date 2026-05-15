@@ -1,11 +1,11 @@
-# agentctl-sdk
+# sea-agent-sdk-js
 
 基于当前 `agentctl` CLI 项目整理出的 Node.js SDK，用于调用 agent-gateway 的注册、查询和聊天接口。
 
 ## 安装
 
 ```bash
-npm install agentctl-sdk
+npm install sea-agent-sdk-js
 ```
 
 如果你当前是本地开发：
@@ -17,9 +17,9 @@ npm install
 ## 初始化
 
 ```js
-import { AgentctlClient } from "agentctl-sdk";
+import { SeaAgentClient } from "sea-agent-sdk-js";
 
-const client = new AgentctlClient({
+const client = new SeaAgentClient({
   endpoint: "http://127.0.0.1:8080",
   apiKey: "sa-xxxxxxxx",
 });
@@ -28,9 +28,9 @@ const client = new AgentctlClient({
 也可以复用 CLI 的默认配置文件：
 
 ```js
-import { AgentctlClient } from "agentctl-sdk";
+import { SeaAgentClient } from "sea-agent-sdk-js";
 
-const client = await AgentctlClient.fromConfig();
+const client = await SeaAgentClient.fromConfig();
 ```
 
 默认读取 `~/.agentctl/config.yaml`，格式与 CLI 一致：
@@ -43,9 +43,9 @@ apiKey: sa-xxxxxxxx
 ## 示例
 
 ```js
-import { AgentctlClient } from "agentctl-sdk";
+import { SeaAgentClient } from "sea-agent-sdk-js";
 
-const client = new AgentctlClient({
+const client = new SeaAgentClient({
   endpoint: "http://127.0.0.1:8080",
   apiKey: process.env.AGENT_GATEWAY_API_KEY,
 });

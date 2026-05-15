@@ -1,4 +1,4 @@
-import { loadAgentctlConfig } from "./config.js";
+import { loadSeaAgentConfig } from "./config.js";
 import { AgentsResource } from "./resources/agents.js";
 import { CatalogResource } from "./resources/catalog.js";
 import { ChatResource } from "./resources/chat.js";
@@ -6,13 +6,13 @@ import { HooksResource } from "./resources/hooks.js";
 import { SkillsResource } from "./resources/skills.js";
 import { SystemResource } from "./resources/system.js";
 import { ToolsResource } from "./resources/tools.js";
-import { AgentctlTransport } from "./transport.js";
+import { SeaAgentTransport } from "./transport.js";
 
-export class AgentctlClient {
+export class SeaAgentClient {
   constructor(options) {
     this.endpoint = options.endpoint;
     this.apiKey = options.apiKey;
-    this.transport = new AgentctlTransport(options.endpoint, options.apiKey);
+    this.transport = new SeaAgentTransport(options.endpoint, options.apiKey);
     this.system = new SystemResource(this.transport);
     this.catalog = new CatalogResource(this.transport);
     this.tools = new ToolsResource(this.transport);
@@ -23,12 +23,12 @@ export class AgentctlClient {
   }
 
   static async fromConfig(path) {
-    const config = await loadAgentctlConfig(path);
+    const config = await loadSeaAgentConfig(path);
     if (!config.endpoint) {
       throw new Error("endpoint is not configured. Expected ~/.agentctl/config.yaml or a custom config path.");
     }
 
-    return new AgentctlClient({
+    return new SeaAgentClient({
       endpoint: config.endpoint,
       apiKey: config.apiKey,
     });
