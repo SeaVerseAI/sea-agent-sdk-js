@@ -68,7 +68,7 @@ console.log(tools);
 
 ```js
 const result = await client.chat.run({
-  agentId: "web_assistant:v1",
+  agentId: "production-line-123:web_assistant:v1",
   message: "Search recent AI news and summarize the top 3 items.",
 });
 
@@ -79,7 +79,7 @@ console.log(result);
 
 ```js
 const result = await client.chat.run({
-  agentId: "web_assistant:v1",
+  agentId: "production-line-123:web_assistant:v1",
   messages: [
     { role: "system", content: "Answer in concise Chinese." },
     { role: "user", content: "Fetch https://example.com and explain what it is." },
@@ -94,7 +94,7 @@ console.log(result);
 ```js
 const result = await client.chat.run({
   requestId: "req_123",
-  agentId: "web_assistant:v1",
+  agentId: "production-line-123:web_assistant:v1",
   category: "fabric",
   message: "Summarize this request context.",
   metadata: {
@@ -126,7 +126,7 @@ const client = new SeaAgentClient({
 
 const text = await client.chat.runStream(
   {
-    agentId: "web_assistant:v1",
+    agentId: "production-line-123:web_assistant:v1",
     message: "Fetch https://example.com and summarize it in one paragraph.",
   },
   {
@@ -150,7 +150,7 @@ console.log("\n\nFinal text:", text);
 ```js
 const text = await client.chat.runStream(
   {
-    agentId: "web_assistant:v1",
+    agentId: "production-line-123:web_assistant:v1",
     message: "Tell me what tools you can use, then answer with a short plan.",
   },
   {
@@ -258,7 +258,7 @@ console.log(result);
 
 ## 注册 Tool、Skill 和 Agent
 
-`agent-gateway` 现在由服务端生成 `tool_key`、`skill_key`、`agent_key`。注册和创建 payload 中不要传这些字段，否则会返回 `400`。
+`agent-gateway` 现在由服务端生成 `tool_key`、`skill_key`、`agent_key`，其中 Agent key 形如 `owner_id:name:version`。注册和创建 payload 中不要传这些字段，否则会返回 `400`。
 
 注册工具：
 
