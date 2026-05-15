@@ -11,11 +11,8 @@ export class ToolsResource {
     return this.transport.get("/v1/tools", {
       search: options.search,
       status: options.status,
-      source_kind: options.sourceKind,
-      owner_id: options.ownerId,
       public: options.public,
       provider: options.provider,
-      category: options.category,
       limit: options.limit,
       offset: options.offset,
     });
