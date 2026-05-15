@@ -238,6 +238,24 @@ const result = await client.chat.run({
 console.log(result);
 ```
 
+如果 Agent 需要由 `agent-gateway` 自动拉起 sandbox，可以在 `agentConfig` 中声明 `runtime.sandbox.sandbox_template`。当前支持的模板枚举为 `react-game` 和 `react-web`：
+
+```js
+const result = await client.chat.run({
+  category: "fabric",
+  agentConfig: {
+    runtime: {
+      sandbox: {
+        sandbox_template: "react-game",
+      },
+    },
+  },
+  message: "Create a small React game.",
+});
+
+console.log(result);
+```
+
 ## 注册 Tool、Skill 和 Agent
 
 `agent-gateway` 现在由服务端生成 `tool_key`、`skill_key`、`agent_key`。注册和创建 payload 中不要传这些字段，否则会返回 `400`。
