@@ -12,7 +12,8 @@ export class SeaAgentClient {
   constructor(options) {
     this.endpoint = options.endpoint;
     this.apiKey = options.apiKey;
-    this.transport = new SeaAgentTransport(options.endpoint, options.apiKey);
+    this.headers = options.headers;
+    this.transport = new SeaAgentTransport(options.endpoint, options.apiKey, options.headers);
     this.system = new SystemResource(this.transport);
     this.catalog = new CatalogResource(this.transport);
     this.tools = new ToolsResource(this.transport);

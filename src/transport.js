@@ -1,9 +1,10 @@
 import { request, WebSocket } from "undici";
 
 export class SeaAgentTransport {
-  constructor(endpoint, apiKey) {
+  constructor(endpoint, apiKey, headers = {}) {
     this.endpoint = endpoint;
     this.apiKey = apiKey;
+    this.headers = { ...headers };
   }
 
   async get(path, query) {
@@ -18,16 +19,16 @@ export class SeaAgentTransport {
     await this.requestStream("GET", this.buildURL(path, query), undefined, onChunk);
   }
 
-  async post(path, body) {
-    return this.requestJSON("POST", this.buildURL(path), body);
+  async post(path, body, headers) {
+    return this.requestJSON("POST", this.buildURL(path), body, headers);
   }
 
-  async postText(path, body) {
-    return this.requestText("POST", this.buildURL(path), body);
+  async postText(path, body, headers) {
+    return this.requestText("POST", this.buildURL(path), body, "*/*", headers);
   }
 
-  async postStream(path, body, onChunk) {
-    await this.requestStream("POST", this.buildURL(path), body, onChunk);
+  async postStream(path, body, onChunk, headers) {
+    await this.requestStream("POST", this.buildURL(path), body, onChunk, headers);
   }
 
   async put(path, body) {
@@ -38,12 +39,9 @@ export class SeaAgentTransport {
     return this.requestJSON("DELETE", this.buildURL(path, query));
   }
 
-  async websocket(path, query, initialMessage, onMessage) {
+  async websocket(path, query, initialMessage, onMessage, headers) {
     const url = this.buildWebSocketURL(path, query);
-    const headers = {};
-    if (this.apiKey) {
-      headers.authorization = `Bearer ${this.apiKey}`;
-    }
+    const requestHeaders = this.buildHeaders("*/*", false, headers);
     if (isDebugEnabled()) {
       console.error(`WS ${url}`);
     }
@@ -51,7 +49,7 @@ export class SeaAgentTransport {
     await new Promise((resolve, reject) => {
       let settled = false;
       let opened = false;
-      const ws = new WebSocket(url, { headers });
+      const ws = new WebSocket(url, { headers: requestHeaders });
 
       const settle = (error) => {
         if (settled) {
@@ -124,13 +122,13 @@ export class SeaAgentTransport {
     return url.toString();
   }
 
-  async requestJSON(method, url, body) {
-    const text = await this.requestText(method, url, body, "application/json");
+  async requestJSON(method, url, body, headers) {
+    const text = await this.requestText(method, url, body, "application/json", headers);
     return parseJSONResponse(text, url);
   }
 
-  async requestText(method, url, body, accept = "*/*") {
-    const { headers, payload } = this.buildRequest(method, url, body, accept);
+  async requestText(method, url, body, accept = "*/*", requestHeaders) {
+    const { headers, payload } = this.buildRequest(method, url, body, accept, requestHeaders);
     const response = await request(url, {
       method,
       headers,
@@ -143,8 +141,8 @@ export class SeaAgentTransport {
     return text;
   }
 
-  async requestStream(method, url, body, onChunk) {
-    const { headers, payload } = this.buildRequest(method, url, body, "text/event-stream");
+  async requestStream(method, url, body, onChunk, requestHeaders) {
+    const { headers, payload } = this.buildRequest(method, url, body, "text/event-stream", requestHeaders);
     const response = await request(url, {
       method,
       headers,
@@ -165,17 +163,12 @@ export class SeaAgentTransport {
     }
   }
 
-  buildRequest(method, url, body, accept = "*/*") {
-    const headers = { accept };
+  buildRequest(method, url, body, accept = "*/*", requestHeaders) {
+    const headers = this.buildHeaders(accept, body !== undefined, requestHeaders);
     let payload;
 
     if (body !== undefined) {
-      headers["content-type"] = "application/json";
       payload = JSON.stringify(body);
-    }
-
-    if (this.apiKey) {
-      headers.authorization = `Bearer ${this.apiKey}`;
     }
 
     if (isDebugEnabled()) {
@@ -184,6 +177,26 @@ export class SeaAgentTransport {
 
     return { headers, payload };
   }
+
+  buildHeaders(accept = "*/*", hasBody = false, requestHeaders = {}) {
+    const headers = {
+      ...(accept ? { accept } : {}),
+      ...(hasBody ? { "content-type": "application/json" } : {}),
+      ...this.headers,
+      ...(requestHeaders ?? {}),
+    };
+
+    if (this.apiKey && !hasHeader(headers, "authorization")) {
+      headers.authorization = `Bearer ${this.apiKey}`;
+    }
+
+    return headers;
+  }
+}
+
+function hasHeader(headers, name) {
+  const lowerName = name.toLowerCase();
+  return Object.keys(headers).some((key) => key.toLowerCase() === lowerName);
 }
 
 function isDebugEnabled() {

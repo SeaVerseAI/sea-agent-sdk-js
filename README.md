@@ -1,6 +1,6 @@
 # sea-agent-sdk-js
 
-基于当前 `agentctl` CLI 项目整理出的 Node.js SDK，用于调用 agent-gateway 的注册、查询和聊天接口。
+基于当前 `agentctl` CLI 项目整理出的 Node.js SDK，用于调用 `agent-gateway` 的注册、查询、聊天、SSE 流式响应和 WebSocket 流式响应接口。
 
 ## 安装
 
@@ -14,6 +14,8 @@ npm install sea-agent-sdk-js
 npm install
 ```
 
+当前包使用 ESM，并要求 Node.js 18 或更高版本。
+
 ## 初始化
 
 ```js
@@ -21,8 +23,14 @@ import { SeaAgentClient } from "sea-agent-sdk-js";
 
 const client = new SeaAgentClient({
   endpoint: "http://127.0.0.1:8080",
-  apiKey: "sa-xxxxxxxx",
+  apiKey: process.env.AGENT_GATEWAY_API_KEY,
+  headers: {
+    "X-User-ID": "production-line-123",
+  },
 });
+
+const health = await client.system.health();
+console.log(health);
 ```
 
 也可以复用 CLI 的默认配置文件：
@@ -40,7 +48,73 @@ endpoint: http://127.0.0.1:8080
 apiKey: sa-xxxxxxxx
 ```
 
-## 示例
+`X-User-ID` 用于 `tools`、`skills`、`agents` 的注册和更新接口，`agent-gateway` 会用它写入 provider、owner 和操作人字段。也可以通过 `headers` 配置其他全局请求头。
+
+## 基础示例
+
+查询工具列表：
+
+```js
+const tools = await client.tools.list({
+  provider: "web-tools-mcp",
+  status: "active",
+  limit: 20,
+});
+
+console.log(tools);
+```
+
+普通非流式聊天：
+
+```js
+const result = await client.chat.run({
+  agentId: "web_assistant:v1",
+  message: "Search recent AI news and summarize the top 3 items.",
+});
+
+console.log(result);
+```
+
+使用多轮消息：
+
+```js
+const result = await client.chat.run({
+  agentId: "web_assistant:v1",
+  messages: [
+    { role: "system", content: "Answer in concise Chinese." },
+    { role: "user", content: "Fetch https://example.com and explain what it is." },
+  ],
+});
+
+console.log(result);
+```
+
+带请求元数据和自定义 Header 的聊天：
+
+```js
+const result = await client.chat.run({
+  requestId: "req_123",
+  agentId: "web_assistant:v1",
+  category: "fabric",
+  message: "Summarize this request context.",
+  metadata: {
+    session_id: "sess_123",
+    user_id: "user_456",
+    trace_id: "trace_789",
+  },
+  headers: {
+    "X-Trace-ID": "trace_789",
+  },
+});
+
+console.log(result);
+```
+
+`request_id`、`category`、`metadata` 会进入 `agent-gateway` 的 chat 请求体；自定义 Headers 会透传给 agent-worker，SSE 和 WebSocket 创建聊天时都支持。
+
+## SSE 流式聊天
+
+SSE 是默认流式传输方式，底层使用 HTTP `text/event-stream`，适合大多数 HTTP 网关和代理场景。
 
 ```js
 import { SeaAgentClient } from "sea-agent-sdk-js";
@@ -50,23 +124,186 @@ const client = new SeaAgentClient({
   apiKey: process.env.AGENT_GATEWAY_API_KEY,
 });
 
-const health = await client.system.health();
-console.log(health);
+const text = await client.chat.runStream(
+  {
+    agentId: "web_assistant:v1",
+    message: "Fetch https://example.com and summarize it in one paragraph.",
+  },
+  {
+    transport: "sse",
+    onTextDelta(delta, event) {
+      process.stdout.write(delta);
+    },
+    onEvent(event) {
+      // 可用于记录日志、统计指标、处理工具调用事件等。
+    },
+  },
+);
 
-const tools = await client.tools.list({
-  provider: "web-tools-mcp",
-  status: "active",
-});
+console.log("\n\nFinal text:", text);
+```
 
+## WebSocket 流式聊天
+
+如果调用方希望使用持久连接，或者运行环境已经统一管理 WebSocket 生命周期，可以将 `transport` 切换为 `"ws"`。
+
+```js
+const text = await client.chat.runStream(
+  {
+    agentId: "web_assistant:v1",
+    message: "Tell me what tools you can use, then answer with a short plan.",
+  },
+  {
+    transport: "ws",
+    onTextDelta(delta, event) {
+      process.stdout.write(delta);
+    },
+    onEvent(event) {
+      if (event.event === "error") {
+        console.error("stream error event:", event.data);
+      }
+    },
+  },
+);
+
+console.log("\n\nFinal text:", text);
+```
+
+## 订阅已有 Chat
+
+如果 Chat 由其他进程、浏览器页面或 CLI 创建，可以通过 Chat ID 继续订阅后续事件。`afterSeq` 用于从指定事件序号之后恢复。
+
+SSE：
+
+```js
+const chatId = "chat_xxxxxxxxxxxxx";
+
+const text = await client.chat.stream(
+  chatId,
+  {
+    transport: "sse",
+    onTextDelta(delta, event) {
+      process.stdout.write(delta);
+    },
+  },
+  {
+    afterSeq: 0,
+  },
+);
+
+console.log("\n\nReceived text:", text);
+```
+
+WebSocket：
+
+```js
+const chatId = "chat_xxxxxxxxxxxxx";
+
+const text = await client.chat.stream(
+  chatId,
+  {
+    transport: "ws",
+    onTextDelta(delta, event) {
+      process.stdout.write(delta);
+    },
+  },
+  {
+    afterSeq: 10,
+  },
+);
+
+console.log("\n\nReceived text:", text);
+```
+
+## 使用内联 Agent 配置
+
+如果不想引用已注册的 Agent ID，可以直接传入 `agentConfig`。`temperature`、`max_turns`、`timeout` 等运行时字段会由 `agent-gateway` 透传给 agent-worker：
+
+```js
 const result = await client.chat.run({
-  agentId: "web_assistant:v1",
-  message: "Search recent AI news",
+  category: "fabric",
+  agentConfig: {
+    agent: {
+      name: "inline-assistant",
+      model: "gpt-4.1-mini",
+      temperature: 0.2,
+      max_turns: 6,
+      timeout: 120,
+      system_prompt: "Answer in Chinese and keep the answer brief.",
+    },
+  },
+  message: "Explain what agent-gateway does.",
 });
 
 console.log(result);
 ```
 
-注册 Hook endpoint：
+## 注册 Tool、Skill 和 Agent
+
+`agent-gateway` 现在由服务端生成 `tool_key`、`skill_key`、`agent_key`。注册和创建 payload 中不要传这些字段，否则会返回 `400`。
+
+注册工具：
+
+```js
+const tool = await client.tools.register({
+  name: "search_web",
+  version: "v1",
+  description: "Search public web pages.",
+  transport: "http",
+  endpoint: "https://example.com/tools/search",
+  method: "POST",
+  parameters: {
+    type: "object",
+    properties: {
+      query: { type: "string" },
+    },
+    required: ["query"],
+  },
+  enabled: true,
+  public: false,
+});
+
+console.log(tool);
+```
+
+注册技能：
+
+```js
+const skill = await client.skills.register({
+  name: "web_research",
+  version: "v1",
+  description: "Research a topic with web tools.",
+  instruction: "Search, compare sources, and summarize findings.",
+  required_tools: [
+    { ref: "production-line-123:search_web:v1" },
+  ],
+  enabled: true,
+  public: false,
+});
+
+console.log(skill);
+```
+
+注册 Agent：
+
+```js
+const agent = await client.agents.register({
+  name: "web_assistant",
+  version: "v1",
+  category: "fabric",
+  system_prompt: "You are a web research assistant.",
+  skills: ["production-line-123:web_research:v1"],
+  config: {
+    temperature: 0.2,
+    max_turns: 6,
+  },
+  enabled: true,
+});
+
+console.log(agent);
+```
+
+## 注册 Hook endpoint
 
 ```js
 const hook = await client.hooks.register({
@@ -80,25 +317,6 @@ console.log(hook);
 ```
 
 Hook 使用 `apiKey` 作为 `Authorization: Bearer ...`，payload 中不要传 `api_key`。Worker 固定用 `POST` 调用 endpoint，业务方按事件 payload 中的 `event_id` 自行过滤。
-
-流式聊天：
-
-```js
-const text = await client.chat.runStream(
-  {
-    agentId: "web_assistant:v1",
-    message: "Fetch https://example.com",
-  },
-  {
-    transport: "sse",
-    onTextDelta(delta) {
-      process.stdout.write(delta);
-    },
-  },
-);
-
-console.log("\nFinal text:", text);
-```
 
 ## 资源接口
 
@@ -132,5 +350,28 @@ console.log("\nFinal text:", text);
 - `client.chat.runStream(options, handlers)`
 - `client.chat.get(chatId)`
 - `client.chat.events(chatId, options)`
-- `client.chat.stream(chatId, handlers)`
+- `client.chat.stream(chatId, handlers, options)`
 - `client.chat.cancel(chatId)`
+
+## 流事件工具函数
+
+如果需要自行处理原始流数据，包内也导出了这些工具函数：
+
+```js
+import {
+  createChatStreamProcessor,
+  parseSSE,
+  parseWebSocketEvent,
+  textFromStreamEvent,
+} from "sea-agent-sdk-js";
+```
+
+## 调试
+
+设置任一环境变量后，SDK 会打印发出的 HTTP 和 WebSocket 请求：
+
+```bash
+export SEAAGENT_DEBUG=1
+# 或
+export AGENTCTL_DEBUG=1
+```

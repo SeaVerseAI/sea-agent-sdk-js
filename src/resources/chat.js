@@ -6,7 +6,8 @@ export class ChatResource {
   }
 
   async createCompletion(payload) {
-    return this.transport.post("/v1/chat/completions", payload);
+    const { headers, body } = splitPayloadHeaders(payload);
+    return this.transport.post("/v1/chat/completions", body, headers);
   }
 
   async streamCompletion(payload, handlers = {}) {
@@ -15,19 +16,22 @@ export class ChatResource {
       ...payload,
       stream: true,
     };
+    const { headers, body } = splitPayloadHeaders(streamPayload);
 
     if (handlers.transport === "ws") {
       await this.transport.websocket(
         "/v1/chat/completions/ws",
         undefined,
-        streamPayload,
+        body,
         processor.writeWebSocketMessage,
+        headers,
       );
     } else {
       await this.transport.postStream(
         "/v1/chat/completions",
-        streamPayload,
+        body,
         processor.writeSSEChunk,
+        headers,
       );
     }
 
@@ -90,9 +94,13 @@ function buildRunPayload(options, stream) {
 
   const messages = normalizeMessages(options.message, options.messages);
   return {
+    ...(options.requestId ? { request_id: options.requestId } : {}),
     ...(options.agentId ? { agent_id: options.agentId } : {}),
+    ...(options.category ? { category: options.category } : {}),
     ...(options.agentConfig ? { agent_config: options.agentConfig } : {}),
+    ...(options.metadata ? { metadata: options.metadata } : {}),
     ...(options.extraBody ?? {}),
+    ...(options.headers ? { headers: options.headers } : {}),
     messages,
     stream,
   };
@@ -103,4 +111,9 @@ function normalizeMessages(message, messages) {
     return messages;
   }
   return [{ role: "user", content: message ?? "" }];
+}
+
+function splitPayloadHeaders(payload) {
+  const { headers, ...body } = payload;
+  return { headers, body };
 }
