@@ -244,6 +244,11 @@ console.log(result);
 const result = await client.chat.run({
   category: "fabric",
   agentConfig: {
+    agent: {
+      name: "inline-sandbox-agent",
+      model: "gpt-4.1-mini",
+      system_prompt: "Build and modify React apps inside the sandbox.",
+    },
     runtime: {
       sandbox: {
         sandbox_template: "react-game",
