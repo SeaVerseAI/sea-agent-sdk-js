@@ -272,7 +272,7 @@ const tool = await client.tools.register({
   name: "search_web",
   version: "v1",
   description: "Search public web pages.",
-  transport: "http",
+  runtime_type: "http",
   endpoint: "https://example.com/tools/search",
   method: "POST",
   parameters: {
