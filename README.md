@@ -68,7 +68,7 @@ console.log(tools);
 
 ```js
 const result = await client.chat.run({
-  agentId: "production-line-123:web_assistant:v1",
+  agentId: "33333333-3333-4333-8333-333333333333",
   message: "Search recent AI news and summarize the top 3 items.",
 });
 
@@ -79,7 +79,7 @@ console.log(result);
 
 ```js
 const result = await client.chat.run({
-  agentId: "production-line-123:web_assistant:v1",
+  agentId: "33333333-3333-4333-8333-333333333333",
   messages: [
     { role: "system", content: "Answer in concise Chinese." },
     { role: "user", content: "Fetch https://example.com and explain what it is." },
@@ -94,7 +94,7 @@ console.log(result);
 ```js
 const result = await client.chat.run({
   requestId: "req_123",
-  agentId: "production-line-123:web_assistant:v1",
+  agentId: "33333333-3333-4333-8333-333333333333",
   category: "fabric",
   message: "Summarize this request context.",
   metadata: {
@@ -126,7 +126,7 @@ const client = new SeaAgentClient({
 
 const text = await client.chat.runStream(
   {
-    agentId: "production-line-123:web_assistant:v1",
+    agentId: "33333333-3333-4333-8333-333333333333",
     message: "Fetch https://example.com and summarize it in one paragraph.",
   },
   {
@@ -150,7 +150,7 @@ console.log("\n\nFinal text:", text);
 ```js
 const text = await client.chat.runStream(
   {
-    agentId: "production-line-123:web_assistant:v1",
+    agentId: "33333333-3333-4333-8333-333333333333",
     message: "Tell me what tools you can use, then answer with a short plan.",
   },
   {
@@ -263,7 +263,7 @@ console.log(result);
 
 ## 注册 Tool、Skill 和 Agent
 
-`agent-gateway` 现在由服务端生成 `tool_key`、`skill_key`、`agent_key`，其中 Agent key 形如 `owner_id:name:version`。注册和创建 payload 中不要传这些字段，否则会返回 `400`。
+`agent-gateway` 现在用服务端生成的 UUID `id` 作为唯一资源身份。注册表资源查找和关联都使用 UUID；不要在 payload 中传已经移除的 `tool_key`、`skill_key`、`agent_key` 字段。
 
 注册工具：
 
@@ -298,7 +298,7 @@ const skill = await client.skills.register({
   description: "Research a topic with web tools.",
   instruction: "Search, compare sources, and summarize findings.",
   required_tools: [
-    { ref: "production-line-123:search_web:v1" },
+    { ref: "22222222-2222-4222-8222-222222222222" },
   ],
   enabled: true,
   public: false,
@@ -315,7 +315,7 @@ const agent = await client.agents.register({
   version: "v1",
   category: "fabric",
   system_prompt: "You are a web research assistant.",
-  skills: ["production-line-123:web_research:v1"],
+  skills: ["11111111-1111-4111-8111-111111111111"],
   config: {
     temperature: 0.2,
     max_turns: 6,
