@@ -26,7 +26,7 @@ export class SeaAgentClient {
   static async fromConfig(path) {
     const config = await loadSeaAgentConfig(path);
     if (!config.endpoint) {
-      throw new Error("endpoint is not configured. Expected ~/.agentctl/config.yaml or a custom config path.");
+      throw new Error("endpoint is not configured. Expected ~/.seaagent/config.yaml or a custom config path.");
     }
 
     return new SeaAgentClient({

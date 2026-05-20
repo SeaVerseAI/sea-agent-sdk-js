@@ -200,7 +200,7 @@ function hasHeader(headers, name) {
 }
 
 function isDebugEnabled() {
-  return process.env.AGENTCTL_DEBUG === "1" || process.env.SEAAGENT_DEBUG === "1";
+  return process.env.SEAAGENT_DEBUG === "1";
 }
 
 function errorMessageFromResponse(text) {

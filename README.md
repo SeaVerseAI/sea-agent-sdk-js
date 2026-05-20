@@ -1,6 +1,6 @@
 # sea-agent-sdk-js
 
-基于当前 `agentctl` CLI 项目整理出的 Node.js SDK，用于调用 `agent-gateway` 的注册、查询、聊天、SSE 流式响应和 WebSocket 流式响应接口。
+基于当前 `sea-agent-cli` 项目整理出的 Node.js SDK，用于调用 `agent-gateway` 的注册、查询、聊天、SSE 流式响应和 WebSocket 流式响应接口。
 
 ## 安装
 
@@ -41,7 +41,7 @@ import { SeaAgentClient } from "sea-agent-sdk-js";
 const client = await SeaAgentClient.fromConfig();
 ```
 
-默认读取 `~/.agentctl/config.yaml`，格式与 CLI 一致：
+默认读取 `~/.seaagent/config.yaml`，格式与 CLI 一致：
 
 ```yaml
 endpoint: http://127.0.0.1:8080
@@ -391,10 +391,8 @@ import {
 
 ## 调试
 
-设置任一环境变量后，SDK 会打印发出的 HTTP 和 WebSocket 请求：
+设置环境变量后，SDK 会打印发出的 HTTP 和 WebSocket 请求：
 
 ```bash
 export SEAAGENT_DEBUG=1
-# 或
-export AGENTCTL_DEBUG=1
 ```

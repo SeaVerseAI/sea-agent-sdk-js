@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import YAML from "yaml";
 
-const defaultConfigPath = join(homedir(), ".agentctl", "config.yaml");
+const defaultConfigPath = join(homedir(), ".seaagent", "config.yaml");
 
 export async function loadSeaAgentConfig(path = defaultConfigPath) {
   try {
