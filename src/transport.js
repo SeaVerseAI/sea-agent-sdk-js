@@ -2,7 +2,7 @@ import { request, WebSocket } from "undici";
 
 export class SeaAgentTransport {
   constructor(endpoint, apiKey, headers = {}) {
-    this.endpoint = endpoint;
+    this.endpoint = normalizeAgentGatewayEndpoint(endpoint);
     this.apiKey = apiKey;
     this.headers = { ...headers };
   }
@@ -192,6 +192,27 @@ export class SeaAgentTransport {
 
     return headers;
   }
+}
+
+export function normalizeAgentGatewayEndpoint(endpoint) {
+  if (typeof endpoint !== "string") {
+    return endpoint;
+  }
+  if (endpoint.trim() === "") {
+    return endpoint;
+  }
+  let url;
+  try {
+    url = new URL(endpoint);
+  } catch {
+    return endpoint;
+  }
+  const segments = url.pathname.split("/").filter(Boolean);
+  if (!segments.includes("agent-v2")) {
+    segments.push("agent-v2");
+  }
+  url.pathname = `/${segments.join("/")}`;
+  return url.toString();
 }
 
 function hasHeader(headers, name) {

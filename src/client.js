@@ -6,14 +6,14 @@ import { HooksResource } from "./resources/hooks.js";
 import { SkillsResource } from "./resources/skills.js";
 import { SystemResource } from "./resources/system.js";
 import { ToolsResource } from "./resources/tools.js";
-import { SeaAgentTransport } from "./transport.js";
+import { normalizeAgentGatewayEndpoint, SeaAgentTransport } from "./transport.js";
 
 export class SeaAgentClient {
   constructor(options) {
-    this.endpoint = options.endpoint;
+    this.endpoint = normalizeAgentGatewayEndpoint(options.endpoint);
     this.apiKey = options.apiKey;
     this.headers = options.headers;
-    this.transport = new SeaAgentTransport(options.endpoint, options.apiKey, options.headers);
+    this.transport = new SeaAgentTransport(this.endpoint, options.apiKey, options.headers);
     this.system = new SystemResource(this.transport);
     this.catalog = new CatalogResource(this.transport);
     this.tools = new ToolsResource(this.transport);
