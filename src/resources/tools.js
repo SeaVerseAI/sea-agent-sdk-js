@@ -11,8 +11,11 @@ export class ToolsResource {
     return this.transport.get("/v1/tools", {
       search: options.search,
       status: options.status,
+      source_kind: options.sourceKind,
+      owner_id: options.ownerId,
       public: options.public,
       provider: options.provider,
+      category: options.category,
       limit: options.limit,
       offset: options.offset,
     });
@@ -26,8 +29,10 @@ export class ToolsResource {
     return this.transport.put(`/v1/tools/${encodeURIComponent(toolId)}`, payload);
   }
 
-  async delete(toolId) {
-    return this.transport.delete(`/v1/tools/${encodeURIComponent(toolId)}`);
+  async delete(toolId, options = {}) {
+    return this.transport.delete(`/v1/tools/${encodeURIComponent(toolId)}`, {
+      operator_id: options.operatorId,
+    });
   }
 
   async resolve(toolId) {
