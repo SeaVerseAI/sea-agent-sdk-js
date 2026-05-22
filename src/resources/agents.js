@@ -23,6 +23,7 @@ export class AgentsResource {
       status: options.status,
       owner_id: options.ownerId,
       category: options.category,
+      include_deleted: options.includeDeleted,
       limit: options.limit,
       offset: options.offset,
     });

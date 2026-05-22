@@ -16,6 +16,7 @@ export class SkillsResource {
       public: options.public,
       provider: options.provider,
       category: options.category,
+      include_deleted: options.includeDeleted,
       limit: options.limit,
       offset: options.offset,
     });
