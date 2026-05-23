@@ -29,10 +29,4 @@ export class SkillsResource {
   async update(skillId, payload) {
     return this.transport.put(`/v1/skills/${encodeURIComponent(skillId)}`, payload);
   }
-
-  async delete(skillId, options = {}) {
-    return this.transport.delete(`/v1/skills/${encodeURIComponent(skillId)}`, {
-      operator_id: options.operatorId,
-    });
-  }
 }
