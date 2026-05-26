@@ -297,7 +297,7 @@ console.log(tool);
 
 ```js
 const skill = await client.skills.register({
-  name: "web_research",
+  name: "web-research",
   description: "Research a topic with web tools.",
   instruction: "Search, compare sources, and summarize findings.",
   required_tools: [
@@ -308,6 +308,21 @@ const skill = await client.skills.register({
 });
 
 console.log(skill);
+```
+
+Skill 运行时规则：
+
+- `name` 必须匹配 `^[a-z0-9-]+$`，只允许小写字母、数字和连字符；不要使用下划线、空格或大写字母。
+- `description` 必填，建议是一句简短路由说明。注册 Agent 聊天时，gateway 会把它写入 inline `SKILL.md` 的 frontmatter `description`。
+- `instruction` 必填，是完整 markdown body。注册 Agent 聊天时，gateway 会把 Skill 组装为：
+
+```md
+---
+name: web-research
+description: Research a topic with web tools.
+---
+
+Search, compare sources, and summarize findings.
 ```
 
 注册 Agent：
